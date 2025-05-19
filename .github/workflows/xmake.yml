@@ -56,10 +56,10 @@ jobs:
 
       - name: Xmake configure
         run: |
-          xmake config --yes --cuda=/usr/local/cuda-12.6
+          xmake config --yes
 
       - name: Build libuipc
         run: |
           xmake build geometry
-          xmake build --jobs=4 cuda
+          xmake build --jobs=4 -v cuda
           xmake build --all
