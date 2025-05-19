@@ -31,7 +31,7 @@ jobs:
           remove-codeql: 'true'
 
       - name: Setup cuda
-        uses: Jimver/cuda-toolkit@v0.2.20
+        uses: Jimver/cuda-toolkit@master
         id: cuda-toolkit
         with:
           cuda: '12.6.3'
