@@ -24,4 +24,3 @@ if has_config("dev") then
         set_runtimes("MD")
     end
 end
-
