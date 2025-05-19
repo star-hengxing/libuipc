@@ -35,6 +35,17 @@ jobs:
         id: cuda-toolkit
         with:
           cuda: '12.6.3'
+          use-github-cache: false
+          use-local-cache: false
+          linux-local-args: "--toolkit"
+
+      - name: List paths (linux)
+        if: runner.os == 'ubuntu-22.04'
+        run: |
+          ls $CUDA_PATH
+          ls $CUDA_PATH/bin
+          ls $CUDA_PATH/include
+          nvcc -V
 
       - name: Checkout repository
         uses: actions/checkout@v4
