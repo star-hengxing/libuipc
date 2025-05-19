@@ -42,14 +42,6 @@ jobs:
           use-github-cache: false
           use-local-cache: false
 
-      - name: List paths (linux)
-        if: matrix.os == 'ubuntu-22.04'
-        run: |
-          ls $CUDA_PATH
-          ls $CUDA_PATH/bin
-          ls $CUDA_PATH/include
-          nvcc -V
-
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -64,7 +56,7 @@ jobs:
 
       - name: Xmake configure
         run: |
-          xmake config --yes
+          xmake config --yes --cuda=/usr/local/cuda-12.6
 
       - name: Build libuipc
         run: |
