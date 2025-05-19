@@ -50,7 +50,7 @@ jobs:
 
       - name: Xmake configure
         run: |
-          xmake config --yes
+          xmake config --yes -v
 
       - name: Build libuipc
         run: |
