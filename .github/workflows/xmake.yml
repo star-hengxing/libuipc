@@ -37,7 +37,7 @@ jobs:
           cuda: '12.6.3'
           use-github-cache: false
           use-local-cache: false
-          linux-local-args: "--toolkit"
+          linux-local-args: ["--toolkit"]
 
       - name: List paths (linux)
         if: runner.os == 'ubuntu-22.04'
