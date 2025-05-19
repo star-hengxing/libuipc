@@ -43,7 +43,7 @@ jobs:
           use-local-cache: false
 
       - name: List paths (linux)
-        if: runner.os == 'ubuntu-22.04'
+        if: matrix.os == 'ubuntu-22.04'
         run: |
           ls $CUDA_PATH
           ls $CUDA_PATH/bin
