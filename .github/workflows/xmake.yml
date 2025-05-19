@@ -21,6 +21,10 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    concurrency:
+        group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}
+        cancel-in-progress: true
+
     steps:
       - name: Maximize build space
         if: matrix.os == 'ubuntu-22.04'
@@ -37,7 +41,6 @@ jobs:
           cuda: '12.6.3'
           use-github-cache: false
           use-local-cache: false
-          linux-local-args: ["--toolkit"]
 
       - name: List paths (linux)
         if: runner.os == 'ubuntu-22.04'
