@@ -22,7 +22,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     concurrency:
-        group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-${{ matrix.os }}
+        group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-cmake-${{ matrix.os }}
         cancel-in-progress: true
 
     steps:
