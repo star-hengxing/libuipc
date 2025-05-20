@@ -17,9 +17,13 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-2022, ubuntu-22.04]
+        os: [windows-2022]
 
     runs-on: ${{ matrix.os }}
+
+    concurrency:
+        group: ${{ github.ref }}-${{ github.base_ref }}-${{ github.head_ref }}-xmake-${{ matrix.os }}
+        cancel-in-progress: true
 
     steps:
       - name: Maximize build space
@@ -31,10 +35,10 @@ jobs:
           remove-codeql: 'true'
 
       - name: Setup cuda
-        uses: Jimver/cuda-toolkit@v0.2.20
-        id: cuda-toolkit
+        uses: MinoruSekine/setup-scoop@main
         with:
-          cuda: '12.6.3'
+          buckets: main
+          apps: cuda
 
       - name: Checkout repository
         uses: actions/checkout@v4

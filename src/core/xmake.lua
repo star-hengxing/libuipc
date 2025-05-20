@@ -2,7 +2,7 @@ add_requires(
     "eigen", "nlohmann_json", "cppitertools", "magic_enum", "tinygltf", "dylib",
     "boost[header_only=y]",
     -- Use non-header-only spdlog and fmt
-    "spdlog[header_only=n,fmt_external=y]"
+    "spdlog[header_only=n,fmt_external=y] <=1.15.2"
 )
 
 -- https://stackoverflow.com/questions/78935510/no-member-named-join-in-namespace-fmt
