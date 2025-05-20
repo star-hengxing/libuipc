@@ -17,7 +17,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-2022, ubuntu-22.04]
+        os: [windows-2022]
 
     runs-on: ${{ matrix.os }}
 
@@ -35,12 +35,10 @@ jobs:
           remove-codeql: 'true'
 
       - name: Setup cuda
-        uses: Jimver/cuda-toolkit@master
-        id: cuda-toolkit
+        uses: MinoruSekine/setup-scoop@main
         with:
-          cuda: '12.6.3'
-          use-github-cache: false
-          use-local-cache: false
+          buckets: main
+          apps: cuda
 
       - name: Setup ninja
         if: matrix.os == 'ubuntu-22.04'
@@ -85,4 +83,4 @@ jobs:
           VCPKG_ROOT: "${{ github.workspace }}/vcpkg"
         run: |
           cmake --preset ci-release
-          cmake --build --preset ci-release --verbose
+          cmake --build --preset ci-release
