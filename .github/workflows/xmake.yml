@@ -39,6 +39,7 @@ jobs:
         with:
           buckets: main
           apps: cuda
+          update_path: 'true'
 
       - name: Checkout repository
         uses: actions/checkout@v4
