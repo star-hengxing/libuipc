@@ -39,6 +39,7 @@ jobs:
         with:
           buckets: main
           apps: cuda
+          update_path: 'true'
 
       - name: Setup ninja
         if: matrix.os == 'ubuntu-22.04'
