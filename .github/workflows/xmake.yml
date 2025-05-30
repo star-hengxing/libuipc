@@ -17,7 +17,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-2022]
+        os: [windows-2025, ubuntu-24.04]
 
     runs-on: ${{ matrix.os }}
 
@@ -35,10 +35,12 @@ jobs:
           remove-codeql: 'true'
 
       - name: Setup cuda
-        uses: MinoruSekine/setup-scoop@main
+        uses: Jimver/cuda-toolkit@v0.2.23
+        id: cuda-toolkit
         with:
-          buckets: main
-          apps: cuda
+          cuda: '12.6.3'
+          use-github-cache: false
+          use-local-cache: false
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -54,10 +56,10 @@ jobs:
 
       - name: Xmake configure
         run: |
-          xmake l detect.sdks.find_cuda
+          xmake config --yes
 
-      # - name: Build libuipc
-      #   run: |
-      #     xmake build geometry
-      #     xmake build --jobs=4 cuda
-      #     xmake build --all
+      - name: Build libuipc
+        run: |
+          xmake build geometry
+          xmake build --jobs=4 cuda
+          xmake build --all
