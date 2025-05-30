@@ -39,7 +39,6 @@ jobs:
         with:
           buckets: main
           apps: cuda
-          update_path: 'true'
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -55,10 +54,10 @@ jobs:
 
       - name: Xmake configure
         run: |
-          xmake config --yes
+          xmake l detect.sdks.find_cuda
 
-      - name: Build libuipc
-        run: |
-          xmake build geometry
-          xmake build --jobs=4 cuda
-          xmake build --all
+      # - name: Build libuipc
+      #   run: |
+      #     xmake build geometry
+      #     xmake build --jobs=4 cuda
+      #     xmake build --all

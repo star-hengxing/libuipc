@@ -34,54 +34,53 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
 
-      - name: Setup cuda
-        uses: MinoruSekine/setup-scoop@main
-        with:
-          buckets: main
-          apps: cuda
-          update_path: 'true'
+      # - name: Setup cuda
+      #   uses: MinoruSekine/setup-scoop@main
+      #   with:
+      #     buckets: main
+      #     apps: cuda
 
-      - name: Setup ninja
-        if: matrix.os == 'ubuntu-22.04'
-        run: |
-          sudo apt update
-          sudo apt install ninja-build
+      # - name: Setup ninja
+      #   if: matrix.os == 'ubuntu-22.04'
+      #   run: |
+      #     sudo apt update
+      #     sudo apt install ninja-build
 
-      - name: Setup ninja
-        if: matrix.os == 'windows-2022'
-        uses: seanmiddleditch/gha-setup-ninja@master
+      # - name: Setup ninja
+      #   if: matrix.os == 'windows-2022'
+      #   uses: seanmiddleditch/gha-setup-ninja@master
 
-      - name: Setup msvc sysroot for cmake
-        if: matrix.os == 'windows-2022'
-        uses: ilammy/msvc-dev-cmd@v1
+      # - name: Setup msvc sysroot for cmake
+      #   if: matrix.os == 'windows-2022'
+      #   uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: true
+      # - name: Checkout repository
+      #   uses: actions/checkout@v4
+      #   with:
+      #     submodules: true
 
-      - name: Generate vcpkg.json
-        continue-on-error: true
-        env:
-          VCPKG_ROOT: "${{ github.workspace }}/vcpkg"
-        run: |
-          cmake --preset release
+      # - name: Generate vcpkg.json
+      #   continue-on-error: true
+      #   env:
+      #     VCPKG_ROOT: "${{ github.workspace }}/vcpkg"
+      #   run: |
+      #     cmake --preset release
 
-      - name: Setup vcpkg
-        id: vcpkg
-        uses: johnwason/vcpkg-action@v6
-        with:
-          manifest-dir: "${{ github.workspace }}/build"
-          triplet: ${{ matrix.os == 'windows-2022' && 'x64-windows-release' || 'x64-linux' }}
-          cache-key: ${{ matrix.os }}
-          revision: master
-          token: ${{ github.token }}
-          github-binarycache: true
-          fetch-depth: '0'
+      # - name: Setup vcpkg
+      #   id: vcpkg
+      #   uses: johnwason/vcpkg-action@v6
+      #   with:
+      #     manifest-dir: "${{ github.workspace }}/build"
+      #     triplet: ${{ matrix.os == 'windows-2022' && 'x64-windows-release' || 'x64-linux' }}
+      #     cache-key: ${{ matrix.os }}
+      #     revision: master
+      #     token: ${{ github.token }}
+      #     github-binarycache: true
+      #     fetch-depth: '0'
 
-      - name: Build libuipc
-        env:
-          VCPKG_ROOT: "${{ github.workspace }}/vcpkg"
-        run: |
-          cmake --preset ci-release
-          cmake --build --preset ci-release
+      # - name: Build libuipc
+      #   env:
+      #     VCPKG_ROOT: "${{ github.workspace }}/vcpkg"
+      #   run: |
+      #     cmake --preset ci-release
+      #     cmake --build --preset ci-release
