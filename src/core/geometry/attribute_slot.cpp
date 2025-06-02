@@ -28,11 +28,6 @@ SizeT IAttributeSlot::size() const noexcept
     return attribute().size();
 }
 
-Json IAttributeSlot::to_json(SizeT i) const
-{
-    return do_to_json(i);
-}
-
 Json IAttributeSlot::to_json() const
 {
     Json j;
@@ -41,10 +36,20 @@ Json IAttributeSlot::to_json() const
     return j;
 }
 
-//const BufferInfo& IAttributeSlot::buffer_info() const
-//{
-//    return buffer_info();
-//}
+bool IAttributeSlot::is_evolving() const noexcept
+{
+    return get_is_evolving();
+}
+
+void IAttributeSlot::is_evolving(bool v) noexcept
+{
+    set_is_evolving(v);
+}
+
+TimePoint IAttributeSlot::last_modified() const noexcept
+{
+    return get_last_modified();
+}
 
 void IAttributeSlot::make_owned()
 {
@@ -63,9 +68,12 @@ S<IAttributeSlot> IAttributeSlot::clone(std::string_view name, bool allow_destro
     return do_clone(name, allow_destroy);
 }
 
-S<IAttributeSlot> IAttributeSlot::clone_empty(std::string_view name, bool allow_destroy) const
+void IAttributeSlot::share_from(const IAttributeSlot& other) noexcept
 {
-    return do_clone_empty(name, allow_destroy);
+    if(std::addressof(other) == this)
+        return;
+    last_modified(std::chrono::high_resolution_clock::now());
+    do_share_from(other);
 }
 
 IAttribute& IAttributeSlot::attribute() noexcept
@@ -78,8 +86,14 @@ const IAttribute& IAttributeSlot::attribute() const noexcept
     return get_attribute();
 }
 
-backend::BufferView backend_view(const IAttributeSlot& a) noexcept
+void IAttributeSlot::rw_access()
 {
-    return backend_view(a.attribute());
+    last_modified(std::chrono::high_resolution_clock::now());
+    make_owned();
+}
+
+void IAttributeSlot::last_modified(const TimePoint& tp)
+{
+    set_last_modified(tp);
 }
 }  // namespace uipc::geometry

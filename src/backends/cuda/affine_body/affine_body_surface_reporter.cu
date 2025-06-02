@@ -7,19 +7,14 @@ namespace uipc::backend::cuda
 {
 REGISTER_SIM_SYSTEM(AffinebodySurfaceReporter);
 
-void AffinebodySurfaceReporter::do_build()
+void AffinebodySurfaceReporter::do_build(BuildInfo& info)
 {
-    m_impl.affine_body_dynamics = &require<AffineBodyDynamics>();
-    auto& global_surf_manager   = require<GlobalSimpicialSurfaceManager>();
-    auto& global_vertex_manager = require<GlobalVertexManager>();
+    m_impl.affine_body_dynamics        = &require<AffineBodyDynamics>();
+    auto& global_vertex_manager        = require<GlobalVertexManager>();
     m_impl.affine_body_vertex_reporter = &require<AffineBodyVertexReporter>();
-
-    global_vertex_manager.after_init_vertex_info(
-        *this, [this] { m_impl.init_surface(world()); });
-    global_surf_manager.add_reporter(this);
 }
 
-void AffinebodySurfaceReporter::Impl::init_surface(backend::WorldVisitor& world)
+void AffinebodySurfaceReporter::Impl::init(backend::WorldVisitor& world)
 {
     auto abd_vertex_offset_in_global = affine_body_vertex_reporter->vertex_offset();
 
@@ -97,9 +92,9 @@ void AffinebodySurfaceReporter::Impl::init_surface(backend::WorldVisitor& world)
     auto total_surf_edge_count     = geo_surf_edges_offsets.back();
     auto total_surf_triangle_count = geo_surf_triangles_offsets.back();
 
-    surf_vertices.resize(total_surf_vertex_count);
-    surf_edges.resize(total_surf_edge_count);
-    surf_triangles.resize(total_surf_triangle_count);
+    surf_vertices.resize(total_surf_vertex_count, -1);
+    surf_edges.resize(total_surf_edge_count, -Vector2i::Ones());
+    surf_triangles.resize(total_surf_triangle_count, -Vector3i::Ones());
 
     // 3) fill surf vertices, edges, triangles
     {
@@ -160,6 +155,14 @@ void AffinebodySurfaceReporter::Impl::init_surface(backend::WorldVisitor& world)
                                                [&](const IndexT& local_surf_vert_id) {
                                                    return local_surf_vert_id + body_vertex_offset_in_global;
                                                });
+
+                        for(auto&& [i, v] : enumerate(surf_v))
+                        {
+                            if(v == 0)
+                            {
+                                fmt::println("surf vertex {}: {}", i, v);
+                            }
+                        }
                     }
                 }
 
@@ -268,15 +271,15 @@ void AffinebodySurfaceReporter::Impl::init_surface(backend::WorldVisitor& world)
 }
 
 void AffinebodySurfaceReporter::Impl::report_count(backend::WorldVisitor& world,
-                                                   GlobalSimpicialSurfaceManager::SurfaceCountInfo& info)
+                                                   SurfaceCountInfo&      info)
 {
     info.surf_vertex_count(surf_vertices.size());
     info.surf_edge_count(surf_edges.size());
     info.surf_triangle_count(surf_triangles.size());
 }
 
-void AffinebodySurfaceReporter::Impl::report_attributes(
-    backend::WorldVisitor& world, GlobalSimpicialSurfaceManager::SurfaceAttributeInfo& info)
+void AffinebodySurfaceReporter::Impl::report_attributes(backend::WorldVisitor& world,
+                                                        SurfaceAttributeInfo& info)
 {
     auto async_copy = []<typename T>(span<T> src, muda::BufferView<T> dst)
     { muda::BufferLaunch().copy<T>(dst, src.data()); };
@@ -286,12 +289,17 @@ void AffinebodySurfaceReporter::Impl::report_attributes(
     async_copy(span{surf_triangles}, info.surf_triangles());
 }
 
-void AffinebodySurfaceReporter::do_report_count(GlobalSimpicialSurfaceManager::SurfaceCountInfo& info)
+void AffinebodySurfaceReporter::do_init(SurfaceInitInfo& info)
+{
+    m_impl.init(world());
+}
+
+void AffinebodySurfaceReporter::do_report_count(SurfaceCountInfo& info)
 {
     m_impl.report_count(world(), info);
 }
 
-void AffinebodySurfaceReporter::do_report_attributes(GlobalSimpicialSurfaceManager::SurfaceAttributeInfo& info)
+void AffinebodySurfaceReporter::do_report_attributes(SurfaceAttributeInfo& info)
 {
     m_impl.report_attributes(world(), info);
 }

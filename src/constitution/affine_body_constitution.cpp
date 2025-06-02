@@ -59,10 +59,14 @@ U64 AffineBodyConstitution::get_uid() const noexcept
 
 void AffineBodyConstitution::apply_to(geometry::SimplicialComplex& sc, Float kappa, Float mass_density) const
 {
-    auto P = sc.meta().find<U64>(builtin::constitution_uid);
-    if(!P)
-        P = sc.meta().create<U64>(builtin::constitution_uid, 0);
-    geometry::view(*P).front() = uid();
+    auto cuid = sc.meta().find<U64>(builtin::constitution_uid);
+    if(!cuid)
+        cuid = sc.meta().create<U64>(builtin::constitution_uid, 0);
+    geometry::view(*cuid).front() = uid();
+
+    // affine body objects' transform changing over time
+    // label transform as evolving for streaming optimization
+    sc.transforms().is_evolving(true);
 
     auto dof_offset = sc.meta().find<IndexT>(builtin::dof_offset);
     if(!dof_offset)
@@ -83,6 +87,11 @@ void AffineBodyConstitution::apply_to(geometry::SimplicialComplex& sc, Float kap
     auto velocity = sc.instances().find<Matrix4x4>(builtin::velocity);
     if(!velocity)
         velocity = sc.instances().create<Matrix4x4>(builtin::velocity, Matrix4x4::Zero());
+
+    // affine body always turns off self-collision by default
+    auto self_collision = sc.meta().find<IndexT>(builtin::self_collision);
+    if(!self_collision)
+        self_collision = sc.meta().create<IndexT>(builtin::self_collision, 0);
 
     auto kappa_attr = sc.instances().find<Float>("kappa");
     if(!kappa_attr)

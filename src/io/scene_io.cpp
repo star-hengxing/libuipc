@@ -12,6 +12,7 @@
 #include <uipc/geometry/utils/extract_surface.h>
 #include <uipc/geometry/utils/merge.h>
 #include <uipc/io/simplicial_complex_io.h>
+#include <uipc/core/scene_factory.h>
 
 
 namespace uipc::core
@@ -211,11 +212,8 @@ void SceneIO::save(std::string_view filename) const
     save(m_scene, filename);
 }
 
-S<Scene> SceneIO::load(std::string_view filename)
+Scene SceneIO::load(std::string_view filename)
 {
-
-    S<Scene> scene;
-
     fs::path path{filename};
     path = fs::absolute(path);
 
@@ -229,7 +227,7 @@ S<Scene> SceneIO::load(std::string_view filename)
         {
             Json scene_json;
             file >> scene_json;
-            scene = sf.from_json(scene_json);
+            return sf.from_snapshot(sf.from_json(scene_json));
         }
         else
         {
@@ -245,7 +243,7 @@ S<Scene> SceneIO::load(std::string_view filename)
             std::vector<std::uint8_t> v((std::istreambuf_iterator<char>(file)),
                                         std::istreambuf_iterator<char>());
             Json                      scene_json = Json::from_bson(v);
-            scene                                = sf.from_json(scene_json);
+            return sf.from_snapshot(sf.from_json(scene_json));
         }
         else
         {
@@ -258,15 +256,128 @@ S<Scene> SceneIO::load(std::string_view filename)
         throw SceneIOError(fmt::format("Unsupported file format when loading {}.", filename));
     }
 
-    if(!scene)
+    return Scene{};
+}
+
+void SceneIO::commit(const SceneSnapshot& last, std::string_view filename)
+{
+    fs::path path{filename};
+    path = fs::absolute(path);
+
+    auto ext = path.extension();
+
+    Json commit_json = commit_to_json(last);
+
+    if(ext == ".json")
     {
-        spdlog::warn("Failed to load scene from file {}.", filename);
+        fs::exists(path.parent_path()) || fs::create_directories(path.parent_path());
+        std::ofstream file(path.string());
+        if(file)
+        {
+            file << commit_json.dump(4);
+        }
+        else
+        {
+            throw SceneIOError(fmt::format("Failed to open file {} for writing.",
+                                           path.string()));
+        }
+    }
+    else if(ext == ".bson")
+    {
+        fs::exists(path.parent_path()) || fs::create_directories(path.parent_path());
+        std::vector<std::uint8_t> v = Json::to_bson(commit_json);
+        std::ofstream             file(path, std::ios::binary);
+        if(file)
+        {
+            file.write(reinterpret_cast<const char*>(v.data()), v.size());
+        }
+        else
+        {
+            throw SceneIOError(fmt::format("Failed to open file {} for writing.",
+                                           path.string()));
+        }
     }
     else
     {
-        spdlog::info("Scene loaded from file {}.", filename);
+        throw SceneIOError(fmt::format("Unsupported file format when writing {}.", filename));
+    }
+}
+
+void SceneIO::update(std::string_view filename)
+{
+    fs::path path{filename};
+    path = fs::absolute(path);
+
+    auto ext = path.extension();
+
+    Json commit_json;
+
+    if(ext == ".json")
+    {
+        std::ifstream file(path.string());
+        if(file)
+        {
+            file >> commit_json;
+        }
+        else
+        {
+            throw SceneIOError(fmt::format("Failed to open file {} for reading.",
+                                           path.string()));
+        }
+    }
+    else if(ext == ".bson")
+    {
+        std::ifstream file(path, std::ios::binary);
+        if(file)
+        {
+            std::vector<std::uint8_t> v((std::istreambuf_iterator<char>(file)),
+                                        std::istreambuf_iterator<char>());
+            commit_json = Json::from_bson(v);
+        }
+        else
+        {
+            throw SceneIOError(fmt::format("Failed to open file {} for reading.",
+                                           path.string()));
+        }
+    }
+    else
+    {
+        throw SceneIOError(fmt::format("Unsupported file format when loading {}.", filename));
     }
 
-    return scene;
+    update_from_json(commit_json);
+}
+
+Json SceneIO::to_json() const
+{
+    SceneFactory sf;
+    return sf.to_json(m_scene);
+}
+
+Scene SceneIO::from_json(const Json& json)
+{
+    SceneFactory sf;
+    return sf.from_snapshot(sf.from_json(json));
+}
+
+Json SceneIO::commit_to_json(const SceneSnapshot& reference) const
+{
+    SceneFactory        sf;
+    SceneSnapshotCommit commit = m_scene - reference;
+    return sf.commit_to_json(commit);
+}
+
+void SceneIO::update_from_json(const Json& json)
+{
+    SceneFactory sf;
+    auto         commit = sf.commit_from_json(json);
+
+    if(!commit.is_valid())
+    {
+        UIPC_WARN_WITH_LOCATION("Invalid commit file, no update to scene");
+        return;
+    }
+
+    m_scene.update_from(commit);
 }
 }  // namespace uipc::core

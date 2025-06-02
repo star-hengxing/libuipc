@@ -16,7 +16,7 @@ void GlobalLinearSystem::dump_linear_system(std::string_view filename)
     {
         auto& A = m_impl.debug_A;
         m_impl.ctx.convert(m_impl.bcoo_A, A);
-        Eigen::MatrixXd mat;
+        Eigen::MatrixX<Float> mat;
         A.copy_to(mat);
 
         auto A_file = fmt::format("{}.A.csv", filename);
@@ -34,7 +34,7 @@ void GlobalLinearSystem::dump_linear_system(std::string_view filename)
     }
 
     {
-        Eigen::VectorXd b;
+        Eigen::VectorX<Float> b;
         m_impl.b.copy_to(b);
 
         auto b_file = fmt::format("{}.b.csv", filename);
@@ -48,7 +48,7 @@ void GlobalLinearSystem::dump_linear_system(std::string_view filename)
     }
 
     {
-        Eigen::VectorXd x;
+        Eigen::VectorX<Float> x;
         m_impl.x.copy_to(x);
 
         auto x_file = fmt::format("{}.x.csv", filename);
@@ -93,9 +93,9 @@ void GlobalLinearSystem::prepare_hessian()
 
 void GlobalLinearSystem::Impl::init()
 {
-    auto diag_subsystem_view       = diag_subsystems.view();
-    auto off_diag_subsystem_view   = off_diag_subsystems.view();
-    auto local_preconditioner_view = local_preconditioners.view();
+    auto diag_subsystem_view     = diag_subsystems.view();
+    auto off_diag_subsystem_view = off_diag_subsystems.view();
+
 
     // 1) Record Diag and OffDiag Subsystems
     auto total_count = diag_subsystem_view.size() + off_diag_subsystem_view.size();
@@ -155,6 +155,13 @@ void GlobalLinearSystem::Impl::init()
 
     // 4) Preconditioner
     // find out diag systems that don't have preconditioner
+    auto local_preconditioner_view = local_preconditioners.view();
+
+    for(auto precond : local_preconditioner_view)
+    {
+        precond->init();
+    }
+
     for(auto precond : local_preconditioner_view)
     {
         auto index = precond->m_subsystem->m_index;

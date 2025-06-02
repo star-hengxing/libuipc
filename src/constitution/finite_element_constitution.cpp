@@ -8,11 +8,15 @@ void FiniteElementConstitution::apply_to(geometry::SimplicialComplex& sc,
                                          Float mass_density,
                                          Float thickness) const
 {
-    auto P = sc.meta().find<U64>(builtin::constitution_uid);
+    auto cuid = sc.meta().find<U64>(builtin::constitution_uid);
 
-    if(!P)
-        P = sc.meta().create<U64>(builtin::constitution_uid, 0);
-    geometry::view(*P).front() = uid();
+    if(!cuid)
+        cuid = sc.meta().create<U64>(builtin::constitution_uid, 0);
+    geometry::view(*cuid).front() = uid();
+
+    // finite element objects' vertex-position changing over time
+    // label the vertex-position as evolving for streaming optimization
+    sc.positions().is_evolving(true);
 
     auto dof_offset = sc.meta().find<IndexT>(builtin::dof_offset);
     if(!dof_offset)
@@ -37,6 +41,12 @@ void FiniteElementConstitution::apply_to(geometry::SimplicialComplex& sc,
     auto attr_thickness = sc.vertices().find<Float>(builtin::thickness);
     if(!attr_thickness)
         attr_thickness = sc.vertices().create<Float>(builtin::thickness, 0.0);
+
+    auto self_collision = sc.meta().find<IndexT>(builtin::self_collision);
+    if(!self_collision)
+        self_collision = sc.meta().create<IndexT>(builtin::self_collision, 0);
+    // for finite element, self-collision is always enabled by default
+    std::ranges::fill(geometry::view(*self_collision), 1);
 
     auto thickness_view = geometry::view(*attr_thickness);
     std::ranges::fill(thickness_view, thickness);
