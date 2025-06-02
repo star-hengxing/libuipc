@@ -9,7 +9,9 @@ add_requires(
 add_requireconfs("spdlog.fmt", {override = true, version = "<11"})
 
 -- find_package(zstd CONFIG REQUIRED) failed
-add_requireconfs("**.ztsd", {system = false})
+if is_plat("linux") then
+    add_requireconfs("cpptrace.libdwarf.ztsd", {system = false})
+end
 
 target("core")
     add_rules("component")
