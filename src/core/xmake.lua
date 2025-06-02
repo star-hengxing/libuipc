@@ -8,6 +8,9 @@ add_requires(
 -- https://forums.developer.nvidia.com/t/utf-8-option-for-the-host-function-in-cuda-msvc/312739
 add_requireconfs("spdlog.fmt", {override = true, version = "<11"})
 
+-- find_package(zstd CONFIG REQUIRED) failed
+add_requireconfs("**.ztsd", {system = false})
+
 target("core")
     add_rules("component")
     add_files("**.cpp")
