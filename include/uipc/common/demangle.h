@@ -1,6 +1,7 @@
 #pragma once
 #include <uipc/common/dllexport.h>
 #include <string>
+#include <typeinfo>
 
 namespace uipc
 {
