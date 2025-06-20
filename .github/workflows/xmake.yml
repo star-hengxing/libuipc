@@ -35,10 +35,10 @@ jobs:
           remove-codeql: 'true'
 
       - name: Setup cuda
-        uses: Jimver/cuda-toolkit@v0.2.20
-        id: cuda-toolkit
+        uses: MinoruSekine/setup-scoop@main
         with:
-          cuda: '12.6.3'
+          buckets: main
+          apps: cuda
 
       - name: Checkout repository
         uses: actions/checkout@v4
