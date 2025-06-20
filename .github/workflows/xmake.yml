@@ -39,7 +39,6 @@ jobs:
         id: cuda-toolkit
         with:
           cuda: '12.6.3'
-          use-local-cache: false
 
       - name: Checkout repository
         uses: actions/checkout@v4
