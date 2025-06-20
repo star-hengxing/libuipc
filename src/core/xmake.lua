@@ -50,7 +50,7 @@ package("libdwarf")
     add_configs("tools", {description = "Build tools", default = false, type = "boolean"})
 
     add_deps("cmake")
-    add_deps("zlib", "ztsd")
+    add_deps("zlib", "zstd")
     if is_plat("windows", "mingw") then
         add_links("dwarf")
     end
