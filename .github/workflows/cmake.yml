@@ -83,4 +83,4 @@ jobs:
           VCPKG_ROOT: "${{ github.workspace }}/vcpkg"
         run: |
           cmake --preset ci-release
-          cmake --build --preset ci-release -v
+          cmake --build --preset ci-release

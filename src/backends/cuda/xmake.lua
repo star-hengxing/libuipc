@@ -13,7 +13,7 @@ target("cuda")
     add_cuflags("/wd4819", {tools = "cl"})
 
     add_links(
-        "cudart", "cuda",
+        "cudart",
         "cublas",
         "cusparse",
         "cusolver"
