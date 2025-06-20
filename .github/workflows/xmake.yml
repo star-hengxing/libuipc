@@ -17,7 +17,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-2022, ubuntu-22.04]
+        os: [windows-2025, ubuntu-22.04]
 
     runs-on: ${{ matrix.os }}
 
@@ -50,7 +50,7 @@ jobs:
 
       - name: Xmake configure
         run: |
-          xmake config --yes
+          xmake config --yes --github_actions=y
 
       - name: Build libuipc
         run: |
